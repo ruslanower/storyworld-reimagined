@@ -20,7 +20,7 @@ describe("game rules", () => {
   it("hp changes apply by hero name", () => {
     const party = [{ name: "A", hp: 10, maxHp: 20 }, { name: "B", hp: 10, maxHp: 20 }] as never;
     const out = applyHp(party, [{ target: "B", delta: -4 }]);
-    expect(out[0].hp).toBe(10);
-    expect(out[1].hp).toBe(6);
+    expect(out[0]?.hp).toBe(10);
+    expect(out[1]?.hp).toBe(6);
   });
 });

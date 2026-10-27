@@ -21,7 +21,7 @@ export const clampHp = (hp: number, max: number) => Math.max(0, Math.min(max, Ma
 export function nextTurn(party: { hp: number }[], from: number): number {
   for (let k = 1; k <= party.length; k++) {
     const i = (from + k) % party.length;
-    if (party[i].hp > 0) return i;
+    if ((party[i]?.hp ?? 0) > 0) return i;
   }
   return -1;
 }
