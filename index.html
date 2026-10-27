@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Хроніки Граней — Кооперативна AI-RPG Платформа</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1e1b4b 0%, #020617 75%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .mobile-shell {
+      width: 100%;
+      max-width: 440px;
+      height: 100dvh;
+      margin: 0 auto;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.85);
+    }
+    @media (min-width: 640px) {
+      .mobile-shell {
+        height: 94dvh;
+        margin-top: 3dvh;
+        border-radius: 26px;
+        overflow: hidden;
+        border: 2px solid rgba(148, 163, 184, 0.22);
+      }
+    }
+    dialog::backdrop {
+      background-color: rgba(2, 6, 23, 0.82);
+      backdrop-filter: blur(5px);
+    }
+
+    /* Стилізація комірок інвентарю та модального вікна предмета у стилі фентезі RPG */
+    .inv-tab-active {
+      background: linear-gradient(180deg, #dfc088 0%, #bfa065 100%);
+      color: #1c1917;
+      border: 1px solid #f5dfa8;
+      box-shadow: 0 4px 14px rgba(217, 180, 108, 0.35);
+    }
+    .inv-tab-inactive {
+      background: rgba(17, 24, 34, 0.9);
+      color: #cbd5e1;
+      border: 1px solid rgba(100, 116, 139, 0.35);
+    }
+    .inv-slot {
+      background: radial-gradient(circle at center, #1e293b 0%, #0f1722 85%);
+      border: 1.5px solid rgba(148, 163, 184, 0.28);
+      border-radius: 10px;
+      position: relative;
+      transition: all 0.16s ease;
+    }
+    .inv-slot:hover {
+      border-color: rgba(234, 197, 120, 0.65);
+      transform: translateY(-1px);
+    }
+    .inv-slot-selected {
+      background: radial-gradient(circle at center, #2c3540 0%, #141c26 85%);
+      border: 2px solid #f0cf85;
+      box-shadow: 0 0 14px rgba(240, 207, 133, 0.45), inset 0 0 10px rgba(240, 207, 133, 0.15);
+    }
+    .rpg-gold-btn {
+      background: linear-gradient(180deg, #1b222c 0%, #11161d 100%);
+      border: 1.5px solid #d4b26f;
+      color: #ebd094;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(212, 178, 111, 0.15);
+      transition: all 0.15s ease;
+    }
+    .rpg-gold-btn:hover {
+      background: linear-gradient(180deg, #26303d 0%, #171e27 100%);
+      border-color: #f5da9b;
+      color: #fff3d1;
+    }
+
+    /* Піксельний стиль 16-bit / 32-bit JRPG (Chrono Trigger / Sea of Stars / Dragon Quest) */
+    .pixel-stage {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    .pixel-Stage-border {
+      box-shadow:
+        inset 0 0 0 2px #090d16,
+        inset 0 0 0 4px rgba(251, 191, 36, 0.35);
+    }
+    .pixel-font-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      letter-spacing: 0.03em;
+    }
+
+    /* Жива та приємна 16-bit / HD-2D анімація персонажів, босів, дощу, пари та предметів */
+    @keyframes heroIdle {
+      0%, 100% {
+        transform: translateY(0px) scaleY(1);
+      }
+      50% {
+        transform: translateY(-3px) scaleY(1.02);
+      }
+    }
+    @keyframes heroActionLunge {
+      0% {
+        transform: translateX(0px) translateY(0px) scale(1);
+      }
+      30% {
+        transform: translateX(14px) translateY(-6px) scale(1.12);
+      }
+      65% {
+        transform: translateX(10px) translateY(-2px) scale(1.08);
+      }
+      100% {
+        transform: translateX(0px) translateY(0px) scale(1);
+      }
+    }
+    @keyframes weaponSway {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-2px);
+      }
+    }
+    @keyframes npcFloat {
+      0%, 100% {
+        transform: translateY(0px) scaleY(1);
+      }
+      50% {
+        transform: translateY(-3px) scaleY(1.02);
+      }
+    }
+    @keyframes emberRise {
+      0% {
+        transform: translateY(10px) scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.95;
+      }
+      100% {
+        transform: translateY(-34px) scale(1.15);
+        opacity: 0;
+      }
+    }
+    @keyframes pixelRainFall {
+      0% {
+        transform: translateY(-24px) translateX(6px);
+        opacity: 0;
+      }
+      30% {
+        opacity: 0.75;
+      }
+      100% {
+        transform: translateY(120px) translateX(-14px);
+        opacity: 0;
+      }
+    }
+    @keyframes toxinVaporRise {
+      0% {
+        transform: translateY(12px) translateX(0px) scale(0.75);
+        opacity: 0;
+      }
+      45% {
+        opacity: 0.85;
+      }
+      100% {
+        transform: translateY(-48px) translateX(8px) scale(1.35);
+        opacity: 0;
+      }
+    }
+    @keyframes itemFloat3D {
+      0%, 100% {
+        transform: translateY(0px) rotate(-2deg) scale(1);
+      }
+      50% {
+        transform: translateY(-5px) rotate(2deg) scale(1.05);
+      }
+    }
+    .animate-hero-idle {
+      animation: heroIdle 1.35s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+    .animate-hero-lunge {
+      animation: heroActionLunge 0.85s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+      transform-origin: bottom center;
+    }
+    .animate-weapon-sway {
+      animation: weaponSway 0.9s steps(2, end) infinite;
+      transform-origin: bottom center;
+    }
+    .animate-npc-float {
+      animation: npcFloat 1.5s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+    .animate-ember {
+      animation: emberRise 2.8s ease-in-out infinite;
+    }
+    .animate-pixel-rain {
+      animation: pixelRainFall 0.95s linear infinite;
+    }
+    .animate-toxin-vapor {
+      animation: toxinVaporRise 3.2s ease-in-out infinite;
+    }
+    .animate-item-float {
+      animation: itemFloat3D 2.4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="text-slate-100 antialiased overflow-hidden">
+  <!-- Toast повідомлення -->
+  <div id="toastBanner" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-amber-400 text-slate-950 font-extrabold text-xs shadow-2xl border border-white/30"></div>
+
+  <!-- Головний вертикальний контейнер 9:16 -->
+  <main id="appRoot" class="mobile-shell relative bg-slate-900 flex flex-col overflow-hidden"></main>
+
+  <!-- 3D/Canvas Оверлей кидка кубика D20 (із емблемою з Blender) -->
+  <div id="diceRollOverlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex-col items-center justify-center p-6 text-center select-none">
+    <div class="relative w-36 h-36 flex items-center justify-center mb-4">
+      <img src="assets/d20_emblem.png" onerror="this.style.display='none'" alt="D20" class="absolute inset-0 w-full h-full object-contain animate-spin" style="animation-duration: 3.5s;" />
+      <div id="diceRollNumber" class="relative z-10 text-4xl font-black text-amber-300 drop-shadow-[0_2px_12px_rgba(245,158,11,0.9)] bg-slate-950/80 w-16 h-16 rounded-2xl border border-amber-400/60 flex items-center justify-center">
+        20
+      </div>
+    </div>
+    <div id="diceRollStatus" class="text-base font-extrabold uppercase tracking-wider text-amber-400 mb-1">
+      Кидаємо D20...
+    </div>
+    <div id="diceRollMath" class="text-xs text-slate-300 max-w-xs">
+      Підрахунок результату та бонусів героя...
+    </div>
+  </div>
+
+  <!-- Модальне вікно Предмета Інвентарю поверх екрана (<dialog closedby="any">) -->
+  <dialog id="itemDetailDialog" closedby="any" aria-labelledby="itemModalTitle" class="w-11/12 max-w-[380px] rounded-2xl bg-[#111722] text-slate-100 border border-[#3b4758] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)]">
+    <div id="itemDetailModalBody"></div>
+  </dialog>
+
+  <!-- Модальне вікно Вибору Режиму Кімнати: Створити свою або Приєднатися (<dialog closedby="any">) -->
+  <dialog id="roomModeDialog" closedby="any" aria-labelledby="roomModeModalTitle" class="w-11/12 max-w-[390px] rounded-2xl bg-slate-900 text-slate-100 border border-amber-500/40 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.95)]">
+    <div id="roomModeModalBody"></div>
+  </dialog>
+
+  <!-- Модальне вікно Огляду Класу Персонажа + Введення Імені до 20 символів (<dialog closedby="any">) -->
+  <dialog id="classPreviewDialog" closedby="any" aria-labelledby="classPreviewModalTitle" class="w-11/12 max-w-[400px] rounded-2xl bg-[#0f1722] text-slate-100 border border-amber-400/50 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.95)]">
+    <div id="classPreviewModalBody"></div>
+  </dialog>
+
+  <!-- Модальне вікно Перегляду Союзників у Кімнаті (без чужого інвентарю) (<dialog closedby="any">) -->
+  <dialog id="alliesDialog" closedby="any" aria-labelledby="alliesModalTitle" class="w-11/12 max-w-[390px] rounded-2xl bg-slate-900 text-slate-100 border border-slate-700 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.95)]">
+    <div id="alliesModalBody"></div>
+  </dialog>
+
+  <!-- Модальне вікно Розділення Загону по Локаціях (від 1 до 4 локацій одночасно) (<dialog closedby="any">) -->
+  <dialog id="splitPartyDialog" closedby="any" aria-labelledby="splitPartyModalTitle" class="w-11/12 max-w-[410px] rounded-2xl bg-slate-900 text-slate-100 border-2 border-amber-400/60 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.95)]">
+    <div id="splitPartyModalBody"></div>
+  </dialog>
+
+  <!-- Модальне вікно «МЕНЮ» над екраном гри (<dialog closedby="any">) -->
+  <dialog id="gameMenuDialog" closedby="any" aria-labelledby="gameMenuTitle" class="w-11/12 max-w-sm rounded-2xl bg-slate-900 text-slate-100 border border-slate-700 p-5 shadow-2xl">
+    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+      <div class="flex items-center gap-2">
+        <img src="assets/d20_emblem.png" onerror="this.style.display='none'" alt="D20" class="w-7 h-7 rounded-lg" />
+        <h2 id="gameMenuTitle" class="text-sm font-extrabold text-amber-400 uppercase tracking-wider">
+          Меню Пригоди
+        </h2>
+      </div>
+      <button onclick="document.getElementById('gameMenuDialog').close()" class="text-slate-400 hover:text-white text-lg leading-none">×</button>
+    </div>
+    <div id="gameMenuContent" class="space-y-3 text-xs"></div>
+  </dialog>
+
+  <!-- Модальне вікно Налаштувань ШІ-Майстра (<dialog closedby="any">) -->
+  <dialog id="aiSettingsDialog" closedby="any" aria-labelledby="aiSettingsTitle" class="w-11/12 max-w-md rounded-2xl bg-slate-900 text-slate-100 border border-slate-700 p-5 shadow-2xl">
+    <div class="flex items-center justify-between mb-3">
+      <h2 id="aiSettingsTitle" class="text-sm font-extrabold text-amber-400 uppercase tracking-wider">
+        🤖 Налаштування ШІ-Майстра Гри
+      </h2>
+      <button onclick="document.getElementById('aiSettingsDialog').close()" class="text-slate-400 hover:text-white text-lg leading-none">×</button>
+    </div>
+    <div class="space-y-3 text-xs">
+      <div>
+        <label class="block text-slate-300 font-bold mb-1">Провайдер ШІ:</label>
+        <select id="aiProviderSelect" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white">
+          <option value="free_cloud">Безкоштовний Cloud AI (Pollinations • 0 грн, без ключа)</option>
+          <option value="gemini">Google Gemini 2.0 Flash (Free Tier ключ)</option>
+          <option value="groq">Groq Llama 3.3 70B (Free Tier ключ)</option>
+          <option value="ollama">Локальний Ollama на Mac (100% офлайн)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-slate-300 font-bold mb-1">API Ключ (лише якщо обрано Gemini або Groq):</label>
+        <input id="aiKeyInput" type="password" placeholder="Не обов'язково для Безкоштовного Cloud AI" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white" />
+      </div>
+      <div>
+        <label class="block text-slate-300 font-bold mb-1">Назва моделі Ollama (для локального режиму):</label>
+        <input id="ollamaModelInput" type="text" value="llama3.2" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white" />
+      </div>
+      <div class="pt-2 flex justify-end gap-2">
+        <button onclick="document.getElementById('aiSettingsDialog').close()" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold">
+          Скасувати
+        </button>
+        <button onclick="saveAiSettingsFromModal()" class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-extrabold">
+          Зберегти
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Модальне вікно Додавання Нового Сценарію / Картриджа Пригоди (<dialog closedby="any">) -->
+  <dialog id="customCartridgeDialog" closedby="any" aria-labelledby="customCartridgeTitle" class="w-11/12 max-w-md rounded-2xl bg-slate-900 text-slate-100 border border-slate-700 p-5 shadow-2xl">
+    <div class="flex items-center justify-between mb-3">
+      <h2 id="customCartridgeTitle" class="text-sm font-extrabold text-amber-400 uppercase tracking-wider">
+        ➕ Додати Новий Картридж Пригоди
+      </h2>
+      <button onclick="document.getElementById('customCartridgeDialog').close()" class="text-slate-400 hover:text-white text-lg leading-none">×</button>
+    </div>
+    <div class="space-y-3 text-xs">
+      <p class="text-slate-400">
+        Застосунок не прив'язаний до одного сюжету: додайте будь-яку власну тему пригоди, і ШІ-Майстер проведе по ній загін із 6 героями на вибір!
+      </p>
+      <div>
+        <label class="block text-slate-300 font-bold mb-1">Назва пригоди:</label>
+        <input id="newAdvTitle" type="text" placeholder="Напр.: Таємниця Острова Туманів" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white" />
+      </div>
+      <div>
+        <label class="block text-slate-300 font-bold mb-1">Короткий опис та фінальна ціль:</label>
+        <input id="newAdvSubtitle" type="text" placeholder="Напр.: Проникнути в маяк, обійти варту та запалити сигнальний вогонь" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white" />
+      </div>
+      <div>
+        <label class="block text-slate-300 font-bold mb-1">Особливі правила світу для ШІ-Майстра:</label>
+        <textarea id="newAdvRules" rows="3" placeholder="Напр.: Події відбуваються на скелястому острові під час шторму..." class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"></textarea>
+      </div>
+      <div class="pt-2 flex justify-end gap-2">
+        <button onclick="document.getElementById('customCartridgeDialog').close()" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold">
+          Скасувати
+        </button>
+        <button onclick="createQuickCustomAdventure()" class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-extrabold">
+          Створити Пригоду
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="cartridges.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
