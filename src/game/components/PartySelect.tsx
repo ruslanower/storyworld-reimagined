@@ -3,7 +3,7 @@ import { campaign, heroSprite, STAT_LABEL, type HeroDef, type Stats } from "../d
 
 export function PartySelect({ onBack, onConfirm }: { onBack: () => void; onConfirm: (heroes: HeroDef[]) => void }) {
   const [picked, setPicked] = useState<string[]>([]);
-  const [focus, setFocus] = useState<HeroDef>(campaign.heroes[0]);
+  const [focus, setFocus] = useState<HeroDef>(campaign.heroes[0]!);
 
   const toggle = (h: HeroDef) => {
     setFocus(h);

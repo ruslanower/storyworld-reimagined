@@ -46,7 +46,7 @@ const LOC: Record<string, string> = {
   scene_castle_kitchen_hood: "loc_11_castle_kitchen_hood.jpg",
   scene_castle_plaza_evac: "loc_12_castle_plaza_evac.jpg",
 };
-export const locationSrc = (bg: string) => `/game/locations/${LOC[bg] ?? LOC.scene_tavern_cellar}`;
+export const locationSrc = (bg: string) => `/game/locations/${LOC[bg] ?? LOC["scene_tavern_cellar"]}`;
 
 /** sprite per act entity (index-aligned with rightEntities); null = no sprite */
 const ACT_SPRITES: Record<number, (string | null)[]> = {
