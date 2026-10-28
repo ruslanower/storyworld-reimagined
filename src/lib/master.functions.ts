@@ -60,7 +60,7 @@ ${data.history.join("\n") || "(початок акту)"}
 ХІД: ${data.activeHero} — ${data.mode === "say" ? "КАЖЕ" : "ДІЄ"}: «${data.text}»${data.d20 ? `\nКИДОК D20: ${data.d20}` : ""}`;
 
     try {
-      return { ok: true as const, reply: await callMaster(instructions, prompt) };
+      return { ok: true as const, reply: await callMaster(instructions, prompt, process.env["LOVABLE_API_KEY"]) };
     } catch (e) {
       console.error(e);
       const msg = e instanceof Error ? e.message : "";

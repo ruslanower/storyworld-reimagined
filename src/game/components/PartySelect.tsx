@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { campaign, heroSprite, STAT_LABEL, type HeroDef, type Stats } from "../data";
 
 export function PartySelect({ onBack, onConfirm }: { onBack: () => void; onConfirm: (heroes: HeroDef[]) => void }) {
   const [picked, setPicked] = useState<string[]>([]);
-  const [focus, setFocus] = useState<HeroDef>(campaign.heroes[0]!);
+  const [focus, setFocus] = useState<HeroDef | undefined>(campaign.heroes[0]);
+  if (!focus) return null;
 
   const toggle = (h: HeroDef) => {
     setFocus(h);
@@ -14,15 +16,12 @@ export function PartySelect({ onBack, onConfirm }: { onBack: () => void; onConfi
     <main className="min-h-screen bg-night px-4 py-8 md:px-10">
       <div className="mx-auto max-w-6xl">
         <div className="flex items-center justify-between">
-          <button className="pixel-btn-ghost" onClick={onBack}>
+          <Button variant="pixelGhost" onClick={onBack}>
             ◀ Назад
-          </button>
+          </Button>
           <p className="font-display text-[0.6rem] text-muted-foreground">ЗАГІН {picked.length}/4</p>
         </div>
         <h1 className="title-glow mt-8 text-center text-lg md:text-2xl">Зберіть загін повстанців</h1>
-        <p className="mt-3 text-center text-lg text-muted-foreground">
-          Оберіть від 1 до 4 героїв. Гравці ходять по черзі за одним екраном.
-        </p>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_380px]">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
@@ -30,21 +29,19 @@ export function PartySelect({ onBack, onConfirm }: { onBack: () => void; onConfi
               const on = picked.includes(h.id);
               const order = picked.indexOf(h.id) + 1;
               return (
-                <button
+                <Button variant="ghost"
                   key={h.id}
                   onClick={() => toggle(h)}
                   onMouseEnter={() => setFocus(h)}
-                  className={`pixel-frame group relative flex flex-col items-center p-4 pt-6 text-left transition-transform hover:-translate-y-1 ${on ? "pixel-frame-gold" : ""}`}
+                  aria-pressed={on}
+                  aria-label={h.name}
+                  className={`pixel-frame group relative h-auto whitespace-normal flex flex-col items-center p-4 pt-6 text-left transition-transform hover:-translate-y-1 ${on ? "pixel-frame-gold" : ""}`}
                 >
                   {on && (
                     <span className="absolute right-2 top-2 bg-gold px-2 py-1 font-display text-[0.55rem] text-primary-foreground">
                       P{order}
                     </span>
                   )}
-                  <div
-                    className="absolute inset-x-6 bottom-20 top-8 opacity-40 blur-2xl"
-                    style={{ background: h.color }}
-                  />
                   <img
                     src={heroSprite(h.classKey, on ? "action" : "idle")}
                     alt={h.name}
@@ -53,7 +50,7 @@ export function PartySelect({ onBack, onConfirm }: { onBack: () => void; onConfi
                     height={280}
                   />
                   <p className="relative mt-3 text-center text-base leading-tight text-parchment">{h.name}</p>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -62,7 +59,7 @@ export function PartySelect({ onBack, onConfirm }: { onBack: () => void; onConfi
             <div className="flex items-center gap-4">
               <img src={heroSprite(focus.classKey, "front")} alt="" className="pixel h-24 w-auto" width={240} height={280} />
               <div>
-                <h2 className="font-display text-[0.7rem] leading-relaxed" style={{ color: focus.color }}>
+                <h2 className="font-display text-[0.7rem] leading-relaxed text-gold">
                   {focus.name}
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">{focus.role}</p>
@@ -85,13 +82,13 @@ export function PartySelect({ onBack, onConfirm }: { onBack: () => void; onConfi
                 </div>
               ))}
             </div>
-            <button
-              className="pixel-btn mt-8 w-full"
+            <Button variant="pixel"
+              className="mt-8 w-full"
               disabled={!picked.length}
-              onClick={() => onConfirm(picked.map((id) => campaign.heroes.find((h) => h.id === id)!))}
+              onClick={() => onConfirm(campaign.heroes.filter((h) => picked.includes(h.id)).sort((a, b) => picked.indexOf(a.id) - picked.indexOf(b.id)))}
             >
               Почати Акт I
-            </button>
+            </Button>
           </aside>
         </div>
       </div>

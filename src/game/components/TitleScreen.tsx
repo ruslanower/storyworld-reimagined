@@ -1,8 +1,9 @@
 import keyArt from "@/assets/key-art.jpg";
+import { Button } from "@/components/ui/button";
 import { campaign } from "../data";
 import { Particles } from "./Particles";
 
-export function TitleScreen({ onStart, onContinue }: { onStart: () => void; onContinue?: () => void }) {
+export function TitleScreen({ onStart, onContinue }: { onStart: () => void; onContinue?: (() => void) | undefined }) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-ink">
       <img
@@ -17,8 +18,8 @@ export function TitleScreen({ onStart, onContinue }: { onStart: () => void; onCo
       <div className="scanlines absolute inset-0" />
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-end px-6 pb-16 text-center md:justify-center md:pb-0">
-        <p className="mb-6 font-display text-[0.55rem] tracking-[0.3em] text-parchment/80 md:text-xs">
-          КООПЕРАТИВНА 16-BIT RPG З ШІ-МАЙСТРОМ
+        <p className="mb-6 font-display text-[0.55rem] text-parchment/80 md:text-xs">
+          ТІНЬОВИЙ ЗАКОЛОТ • РОЗДІЛ ПЕРШИЙ
         </p>
         <h1 className="title-glow text-2xl leading-relaxed md:text-5xl md:leading-[1.4]">
           Хроніки Майстра
@@ -29,13 +30,13 @@ export function TitleScreen({ onStart, onContinue }: { onStart: () => void; onCo
         <p className="mt-8 max-w-xl text-lg leading-snug text-parchment/90 md:text-xl">{campaign.subtitle.split(".")[0]}.</p>
 
         <div className="mt-10 flex flex-col gap-5 sm:flex-row">
-          <button className="pixel-btn" onClick={onStart}>
+          <Button variant="pixel" onClick={onStart}>
             ▶ Нова пригода
-          </button>
+          </Button>
           {onContinue && (
-            <button className="pixel-btn-ghost" onClick={onContinue}>
+            <Button variant="pixelGhost" onClick={onContinue}>
               Продовжити
-            </button>
+            </Button>
           )}
         </div>
 
