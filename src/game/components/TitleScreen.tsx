@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { campaign } from "../data";
 import { Particles } from "./Particles";
 
-export function TitleScreen({ onStart, onContinue }: { onStart: () => void; onContinue?: () => void }) {
+export function TitleScreen({ onStart, onContinue }: { onStart: () => void; onContinue?: (() => void) | undefined }) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-ink">
       <img

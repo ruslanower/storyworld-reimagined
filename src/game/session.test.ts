@@ -25,7 +25,9 @@ describe("campaign session", () => {
   });
   it("advances acts without losing hero health", () => {
     const state = newGame(["hero_illusionist"]);
-    state.party[0].hp = 10;
+    const hero = state.party[0];
+    if (!hero) throw new Error("Expected hero");
+    hero.hp = 10;
     expect(advanceAct(state).actIndex).toBe(1);
     expect(advanceAct(state).party[0]?.hp).toBe(10);
   });
