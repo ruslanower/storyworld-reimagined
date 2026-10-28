@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { Output, streamText } from "ai";
 import { z } from "zod";
+import { createLovableAiGatewayRunIdFetch } from "./gateway-run-id.server";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 const MODEL = "openai/gpt-6-astra";
@@ -21,12 +22,13 @@ export const masterSchema = z.object({
 
 export type MasterReply = z.infer<typeof masterSchema>;
 
-export async function callMaster(instructions: string, prompt: string): Promise<MasterReply> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
+export async function callMaster(instructions: string, prompt: string, apiKey: string | undefined): Promise<MasterReply> {
   if (!apiKey) throw new Error("ШІ-Майстер не налаштований");
+  const gateway = createLovableAiGatewayRunIdFetch();
   const provider = createOpenAI({
     baseURL: GATEWAY,
     apiKey,
+    fetch: gateway.fetch,
     headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
   });
   const result = streamText({
@@ -38,10 +40,14 @@ export async function callMaster(instructions: string, prompt: string): Promise<
       openai: {
         forceReasoning: true,
         reasoningEffort: "low",
+        reasoningSummary: "auto",
+        include: ["reasoning.encrypted_content"],
         store: false,
         strictJsonSchema: true,
       },
     },
   });
-  return (await result.output) as MasterReply;
+  const output = await result.output;
+  if (!output?.narration.trim()) throw new Error("Майстер не повернув розповідь");
+  return masterSchema.parse(output);
 }
