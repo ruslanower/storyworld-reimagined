@@ -6,9 +6,10 @@ echo "🎲 Запуск оновленої гри «Хроніки Майстр�
 if command -v npm >/dev/null 2>&1; then
   if [ ! -d "node_modules" ]; then
     echo "📦 Встановлення залежностей (перший запуск)..."
-    npm install
+    npm install --legacy-peer-deps
   fi
-  echo "🚀 Запуск dev-сервера на http://localhost:3000..."
+  echo "🚀 Запуск гри у браузері на http://localhost:8080..."
+  (sleep 2 && open "http://localhost:8080") &
   npm run dev
 else
   echo "Node.js/npm не знайдено, відкриваємо статичний сервер..."
